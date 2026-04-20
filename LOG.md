@@ -178,97 +178,6 @@ storage = FileDataStorage(
 
 ---
 
-## Bonus Improvements (Post-Initial 3 Prompts)
-
-### 4. ⭐⭐⭐⭐⭐ Security Hardening & Performance Optimization
-**Prompt:** "is there any security or performance concern? if so, then correct it following best security patterns and correct practices in code"
-
-**Security Fixes Implemented:**
-- **Password Hashing**: PBKDF2 with salt (100,000 iterations) instead of plain-text
-- **Timing-Safe Comparison**: `hmac.compare_digest()` prevents timing attacks on username/password
-- **Rate Limiting**: 5 failed attempts → 15-minute account lockout (prevents brute-force)
-- **File Path Validation**: Prevents directory traversal attacks (`../` injection)
-- **Input Validation**: Max value length (1,000 chars), max items (10,000)
-- **Environment File Permissions**: Validates `.env` has secure permissions (≤ 0o600)
-- **Logging**: Replaces `print()` with proper logging for security auditing
-
-**Performance Improvements:**
-- **ID Counter Optimization**: Changed from O(n) `len(items)+1` to O(1) counter
-- **Memory Management**: Added `MAX_ITEMS=10,000` and `MAX_VALUE_LENGTH=1,000` limits
-- **Efficient Reloading**: Proper ID counter rebuilding on file load
-
-**Code Example:**
-```python
-# Security: Password hashing with salt
-@staticmethod
-def _hash_password(password: str) -> str:
-    salt = os.urandom(32)
-    pw_hash = hashlib.pbkdf2_hmac('sha256', password.encode(), salt, 100000)
-    return salt.hex() + ':' + pw_hash.hex()
-
-# Security: Rate limiting with account lockout
-def _is_locked_out(self, username: str) -> bool:
-    recent_attempts = [
-        attempt for attempt in self._failed_attempts[username]
-        if datetime.now() - attempt < timedelta(minutes=LOCK_TIMEOUT_MINUTES)
-    ]
-    return len(recent_attempts) >= MAX_LOGIN_ATTEMPTS
-
-# Security: Timing-safe comparison
-username_match = hmac.compare_digest(username, self._valid_username)
-password_match = hmac.compare_digest(provided_hash, stored_pw_hash)
-
-# Security: File path validation
-def _validate_file_path(file_path: str) -> str:
-    path = Path(file_path).resolve()
-    path.relative_to(Path.cwd().resolve())  # Prevents traversal
-    if path.suffix.lower() not in {'.json', '.txt'}:
-        raise ValueError("File type not allowed")
-    return str(path)
-```
-
-**Impact:** ⭐⭐⭐⭐⭐ Enterprise security & performance
-
----
-
-### 5. ⭐⭐⭐ Essential Documentation
-**Prompt:** "add just necessary docstrings, following best practices"
-
-**Results:**
-- Added module-level docstring explaining application purpose
-- Added class docstrings for all 11 classes
-- Added docstrings for key methods
-- Followed PEP 257 standards
-- Minimal but complete documentation
-- No redundancy (type hints not repeated)
-
-**Documentation Added:**
-```python
-"""Data processing application with SOLID principles, security, and best practices."""
-
-class Configuration:
-    """Loads and provides application configuration from environment variables."""
-
-class DataItem:
-    """Immutable data item with id, value, and timestamp."""
-
-class SimpleAuthenticator(IAuthenticator):
-    """Authenticator with rate limiting and timing-safe comparison."""
-
-class FileDataStorage(IDataStorage):
-    """Persists data to JSON files with security validation and error handling."""
-
-class DataManager:
-    """Manages in-memory data collection with validation and performance optimization."""
-
-class ConsoleInterface:
-    """Provides command-line interface for user interaction."""
-```
-
-**Impact:** ⭐⭐⭐ Professional code documentation
-
----
-
 ## Quantitative Results
 
 | Metric                 | Before | After     | Improvement                |
@@ -308,13 +217,13 @@ class ConsoleInterface:
 
 ## Time Investment vs. Results
 
-| Aspect                    | Time | Value      |
-| ------------------------- | ---- | ---------- |
-| SOLID Refactoring         | ~30% | ⭐⭐⭐⭐⭐ |
-| Error Handling            | ~25% | ⭐⭐⭐⭐   |
-| Configuration Management  | ~15% | ⭐⭐⭐⭐   |
-| Security Hardening        | ~20% | ⭐⭐⭐⭐⭐ |
-| Documentation             | ~10% | ⭐⭐⭐     |
+| Aspect                   | Time | Value      |
+| ------------------------ | ---- | ---------- |
+| SOLID Refactoring        | ~30% | ⭐⭐⭐⭐⭐ |
+| Error Handling           | ~25% | ⭐⭐⭐⭐   |
+| Configuration Management | ~15% | ⭐⭐⭐⭐   |
+| Security Hardening       | ~20% | ⭐⭐⭐⭐⭐ |
+| Documentation            | ~10% | ⭐⭐⭐     |
 
 ---
 
@@ -354,13 +263,15 @@ class ConsoleInterface:
 ## Recommendations for Future Development
 
 ### Completed ✅
+
 - ✅ Logging instead of print statements
-- ✅ Rate limiting to authentication attempts  
+- ✅ Rate limiting to authentication attempts
 - ✅ Input validation and sanitization
 - ✅ Password hashing and security
 - ✅ Essential docstrings
 
 ### Recommended Future Enhancements 🚀
+
 1. Add comprehensive unit tests for all classes
 2. Implement database storage as alternative to FileDataStorage
 3. Create CSV/XML export functionality using DataSerializer pattern
